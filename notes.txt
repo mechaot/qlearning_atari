@@ -1,0 +1,40 @@
+Q learning -> discrete (NOT: continous) actions
+              
+round-based -> finish or die: episode terminates
+
+ -> EPISODES!
+   -> Terminal state is unique (but with different rewards)
+
+             
+actions cause state transitions
+  -> with probabilities
+  
+           
+
+p(s', r  |  a, s) != 1 
+  -> probability of ending up in state s' with reward reward
+     after taking action a on state s
+     
+     can be one but does not have to
+     
+     
+Sum of over all possible s', r == 1.0
+
+
+
+Policy \PI -> given state s the agent will take action a (deterministic or not)
+
+   probabilities that agent will take action a when in state state
+   
+   policy(state) -> action
+   
+   
+    value function v(s) -> value of a state: expected future rewards when in state s  --> for all possible states s in state space S
+
+    action reward q(s, a) -> expected gain/future reward wen in s and take action a
+
+
+exploitation (best action) vs exploration (random action, get to know environment better)
+
+Continuous state spaces -> continous Q-Functions -> Deep NN
+  (instead of tables)

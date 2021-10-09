@@ -1,6 +1,6 @@
 .vscode/
 swigwin-4.0.2/
-checkpoints/
+checkpoints*/
 atari-py/
 __pycache__/
 *.png

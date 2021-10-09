@@ -1,5 +1,6 @@
 import numpy as np
-
+from os.path import join, dirname
+from os import makedirs
 #torch: shut up about indexing with uint8
 #import warnings
 #warnings.filterwarnings("ignore", category=UserWarning)
@@ -8,6 +9,7 @@ from dqn_agent import DQNAgent
 from utils import make_env, plot_learning_curve
 from tqdm import tqdm
 from time import perf_counter
+from imageio import imwrite
 
 import gym
 #import ale_py
@@ -18,7 +20,7 @@ if __name__ == '__main__':
     env = make_env(env_name)
     best_score = -np.inf
     load_checkpoint = False
-    render_episode = False
+    render_episode = 50 # render every nth episode
 
     n_games = 2000
     agent = DQNAgent(
@@ -29,12 +31,12 @@ if __name__ == '__main__':
         mem_size=80000,
         batch_size=64,
         replace=1000,
-        chkpoint_dir='./checkpoints',
+        chkpoint_dir='./checkpoints2',
         env_name=env_name
     )
 
     if load_checkpoint:
-        agent.load_models()
+        agent.load_models(include_memory=True)
 
     #figure_file = f"{agent.checkpoint_dir}/{agent.algo}_{env_name}_lr{agent.lr}_{n_games}.png"
     figure_file = agent.checkpoint_dir+"/"+agent.algo+"_"+env_name+"_lr"+str(agent.lr)+"_"+str(n_games)+".png"
@@ -63,8 +65,11 @@ if __name__ == '__main__':
                 n_steps += 1
                 step += 1
 
-                if render_episode:
-                    fname = "frame_e{i:05}_f{i:05}.png".format(episode, step)
+                if episode % render_episode == 0:# and render_episode > 0:
+                    fname = join(agent.checkpoint_dir, "e{:05d}/frame{:07d}.png".format(episode, step))
+                    makedirs(dirname(fname), exist_ok=True)
+                    imwrite(fname, (obs[-1,...] * 255).astype(np.uint8))
+                    #  ffmpeg -r 30 -i frame%07d.png -c:v libvpx-vp9 -crf 20 -b:v 2M -y out.mp4
 
             _toc = perf_counter()
             scores.append(score)
@@ -73,15 +78,17 @@ if __name__ == '__main__':
 
             avg_score = np.mean(scores[-100:])
             t = _toc-_tic
-            print("episode: {i}, score: {score:.2f}, avg: {avg_score:.2f}, best: {best_score:.2f}, e: {agent.epsilon}, steps: {n_steps}, t: {t:.2f}".format(**locals()))
+            print("episode: {episode}, score: {score:.2f}, avg: {avg_score:.2f}, best: {best_score:.2f}, e: {agent.epsilon}, steps: {n_steps}, t: {t:.2f}".format(**locals()))
 
             if avg_score > best_score:
                 if not load_checkpoint:
                     agent.save_models()
                 best_score = avg_score
     except KeyboardInterrupt:
-        print("Canceled by user request")
+        print("Canceled by user request. Saving state")
 
     plot_learning_curve(steps, scores, eps_history, figure_file)
-
+    
+    print("Saving models.")
+    agent.save_models(include_memory=True)
     print("done.")

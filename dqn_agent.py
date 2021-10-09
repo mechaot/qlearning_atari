@@ -1,5 +1,9 @@
 import numpy as np
 import torch as T
+from os.path import abspath, normpath, join, dirname, exists, isdir
+from os import makedirs
+from shutil import rmtree
+import json
 
 from deep_q_network import DeepQNetwork
 from replay_memory import ReplayBuffer
@@ -25,6 +29,14 @@ class DQNAgent():
         self.lr = lr                       # learning rate
         self.checkpoint_dir = chkpoint_dir # were to save checkpoints
         
+        # save params before initializing the large buffers
+        self.memory_filename = normpath(join(self.checkpoint_dir, self.env_name+"_memory.npz"))
+        rmtree(dirname(self.memory_filename))
+        makedirs(dirname(self.memory_filename), exist_ok=True)
+        with open(join(dirname(self.memory_filename), "params.json"), 'w') as f:
+            json.dump(self.__dict__, f)
+            f.close()
+
         self.action_space = [i for i in range(self.n_actions)]
         self.learn_step_counter = 0 # when to update target network from eval network
 
@@ -39,7 +51,7 @@ class DQNAgent():
         self.q_next = DeepQNetwork(lr=self.lr, n_actions=self.n_actions, input_shape=self.input_shape,
                                 name=self.env_name+"_"+self.algo+'_q_next',
                                 checkpoint_dir=self.checkpoint_dir)
-
+        
 
     def choose_action(self, observation):
         if np.random.random() > self.epsilon:
@@ -73,13 +85,17 @@ class DQNAgent():
     def decrement_epsilon(self):
         self.epsilon = max(self.epsilon - self.eps_dec, self.eps_min)
 
-    def save_models(self):
+    def save_models(self, include_memory=False):
         self.q_eval.save_checkpoint()
         self.q_next.save_checkpoint()
+        if include_memory:
+            self.memory.save(self.memory_filename)
 
-    def load_models(self):
+    def load_models(self, include_memory=False):
         self.q_eval.load_checkpoint()
         self.q_next.load_checkpoint()
+        if include_memory:
+            self.memory.load(self.memory_filename)
 
     def learn(self):
         # if not enough samples in memory, do not learn, keep dumb and try ;)

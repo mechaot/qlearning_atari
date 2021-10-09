@@ -12,6 +12,26 @@ class ReplayBuffer():
         self.n_actions = n_actions
         self.reset()
 
+    def save(self, filename):
+        '''
+            save current buffers to a file
+        '''
+        np.savez_compressed(filename, 
+            state=self.state_mem, state_=self.new_state_mem,
+            action=self.action_mem, reward=self.reward_mem,
+            done=self.done_mem)
+
+    def load(self, filename):
+        '''
+            restore buffers from file
+        '''
+        with np.load(filename) as data:
+            self.state_mem = data["state"]
+            self.new_state_mem = data["state_"]
+            self.action_mem = data["action"]
+            self.reward_mem = data["reward"]
+            self.done_mem = data["done"]
+
     def reset(self):
         '''
             reset the memory bank completely

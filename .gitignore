@@ -4,3 +4,4 @@ checkpoints*/
 atari-py/
 __pycache__/
 *.png
+*.bin

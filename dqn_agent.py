@@ -106,22 +106,20 @@ class DQNAgent():
             return
 
         self.q_eval.optimizer.zero_grad()
+        # every few 10000 steps: copy q_eval weights to q_next
         self.update_target_network()
 
         # replay memory actions
         states, actions, rewards, states_, dones = self.sample_memory()
 
-        # action values for batch of states
-        # slice out the values for actions we remember to have performed
+        # handle pytorch indexing for the batch
         indices = np.arange(self.batch_size, dtype=int)
         # using current policy, get the action values
         q_pred = self.q_eval.forward(states)[indices, actions]
 
-
         # use target network to estimate the max value of the resulting state
         q_next, _ = self.q_next.forward(states_).max(dim=1)
-
-        q_next[dones] = 0.0  # where terminal, value is zero
+        q_next[dones] = 0.0  # where new state is terminal, value is zero
 
         q_target = rewards + self.gamma*q_next
 

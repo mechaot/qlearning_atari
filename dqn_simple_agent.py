@@ -31,7 +31,7 @@ class LinearDeepQNetwork(nn.Module):
         return actions
 
 
-class Agent():
+class SimpleAgent():
     def __init__(self, input_dims, n_actions, lr=0.001, gamma=0.99, epsilon=1.0, eps_dec=1e-5, eps_min=0.01):
         self.input_dims = input_dims
         self.n_actions = n_actions

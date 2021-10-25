@@ -11,6 +11,9 @@ from replay_memory import ReplayBuffer
 #pylint: disable=no-member
 
 class DQNAgent():
+    '''
+        Minh et al.
+    '''
     def __init__(self, 
             env_name, input_shape, n_actions,
             mem_size=50000, replace=1000, batch_size=32,

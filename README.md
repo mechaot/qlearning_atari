@@ -15,6 +15,15 @@ pip install -r requirements.txt
 git clone https://github.com/mechaot/qlearning_atari
 ```
 
+
+# Howto Run
+
+Select Agent by modifying import and instance in `dqn_main.py`. Maybe adjust number of games `n_games`.
+
+Run `python dqn_main.py`
+
+Expect this to take several hours with pytoch+CUDA, several days on pytorch without CUDA.
+
 # Note
 
 We pin old python and old libs because newer versions are cumbersome/do not work: they lack the roms due to increasing copyright concerns.

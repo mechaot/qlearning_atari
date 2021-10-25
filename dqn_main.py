@@ -5,14 +5,19 @@ from os import makedirs
 #import warnings
 #warnings.filterwarnings("ignore", category=UserWarning)
 
-from dqn_agent import DQNAgent
+#from dqn_agent import DQNAgent as Agent
+#from ddqn_agent import DoubleDQNAgent as Agent
+#from duelingqn_agent import DuelingDQNAgent as Agent
+from dueling_double_dqn_agent import DuelingDoubleDQNAgent as Agent
+
 from utils import make_env, plot_learning_curve
 from tqdm import tqdm
 from time import perf_counter
 from imageio import imwrite
 
 import gym
-#import ale_py
+from gym import wrappers
+
 if __name__ == '__main__':
     #env_name = 'ALE/Tetris-v5'
     #env_name = 'Pong-v1'
@@ -22,8 +27,8 @@ if __name__ == '__main__':
     load_checkpoint = False
     render_episode = 50 # render every nth episode
 
-    n_games = 2000
-    agent = DQNAgent(
+    n_games = 300 # 500, 2000
+    agent = Agent(
         gamma=0.99, epsilon=1.0, eps_min=.1, eps_dec=2e-6,
         lr=1e-4,
         input_shape=env.observation_space.shape,
@@ -31,12 +36,16 @@ if __name__ == '__main__':
         mem_size=80000,
         batch_size=64,
         replace=1000,
-        chkpoint_dir='./checkpoints2',
+        chkpoint_dir='./checkpoints3',
         env_name=env_name
     )
 
     if load_checkpoint:
         agent.load_models(include_memory=True)
+
+    #render episode
+    # makedirs(`./video`, exist_ok=True)
+    # env = wrappers.Monitor(env, './video', video_callable=lambda episode_id: True, force=True)
 
     #figure_file = f"{agent.checkpoint_dir}/{agent.algo}_{env_name}_lr{agent.lr}_{n_games}.png"
     figure_file = agent.checkpoint_dir+"/"+agent.algo+"_"+env_name+"_lr"+str(agent.lr)+"_"+str(n_games)+".png"

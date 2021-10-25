@@ -5,17 +5,17 @@ from os import makedirs
 from shutil import rmtree
 import json
 
-from deep_q_network import DeepQNetwork
+from dueling_q_network import DuelingDeepQNetwork
 from replay_memory import ReplayBuffer
 
 #pylint: disable=no-member
 
-class DQNAgent():
+class DuelingDQNAgent():
     def __init__(self, 
             env_name, input_shape, n_actions,
             mem_size=50000, replace=1000, batch_size=32,
             epsilon=0.9, eps_min=.01, eps_dec=5e-7,
-            gamma=0.99, lr=.99, algo='DQNAgent', chkpoint_dir="./checkpoint"):
+            gamma=0.99, lr=.99, algo='DuelingDeepQNetwork', chkpoint_dir="./checkpoint"):
         self.env_name = env_name           # name of game and gym env
         self.input_shape = input_shape       # image shape
         self.n_actions = n_actions         # number of possible actions
@@ -43,12 +43,12 @@ class DQNAgent():
         self.memory = ReplayBuffer(mem_size, self.input_shape, self.n_actions)
 
         #this will have the real learning and back-propagation
-        self.q_eval = DeepQNetwork(lr=self.lr, n_actions=self.n_actions, input_shape=self.input_shape,
+        self.q_eval = DuelingDeepQNetwork(lr=self.lr, n_actions=self.n_actions, input_shape=self.input_shape,
                                 name=self.env_name+"_"+self.algo+'_q_eval',
                                 checkpoint_dir=self.checkpoint_dir)
 
         #this will get the parameters copied to occationally
-        self.q_next = DeepQNetwork(lr=self.lr, n_actions=self.n_actions, input_shape=self.input_shape,
+        self.q_next = DuelingDeepQNetwork(lr=self.lr, n_actions=self.n_actions, input_shape=self.input_shape,
                                 name=self.env_name+"_"+self.algo+'_q_next',
                                 checkpoint_dir=self.checkpoint_dir)
         
@@ -57,8 +57,8 @@ class DQNAgent():
         if np.random.random() > self.epsilon:
             # be greedy
             state = T.tensor([observation], dtype=T.float).to(self.q_eval.device)
-            actions = self.q_eval.forward(state)
-            action = T.argmax(actions).item()
+            _, advantage = self.q_eval.forward(state)
+            action = T.argmax(advantage).item()
         else:
             action = np.random.choice(self.action_space)
         return action
@@ -112,15 +112,16 @@ class DQNAgent():
         # slice out the values for actions we remember to have performed
         indices = np.arange(self.batch_size, dtype=int)
         # using current policy, get the action values
-        q_pred = self.q_eval.forward(states)[indices, actions]
-
-
+        V_s, A_s = self.q_eval.forward(states)  # values, advantages
         # use target network to estimate the max value of the resulting state
-        q_next, _ = self.q_next.forward(states_).max(dim=1)
+        V_s_, A_s_ = self.q_next.forward(states_)
 
-        q_next[dones] = 0.0  # where terminal, value is zero
+        q_pred = T.add(V_s, A_s - A_s.mean(dim=1, keepdim=True))[indices, actions]
+        q_next = T.add(V_s_, A_s_ - A_s_.mean(dim=1, keepdim=True)).max(dim=1)[0]
+        q_next[dones] = 0.0
 
         q_target = rewards + self.gamma*q_next
+
 
         loss = self.q_eval.loss(q_target, q_pred).to(self.q_eval.device)
         loss.backward()

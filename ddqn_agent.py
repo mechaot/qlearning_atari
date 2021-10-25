@@ -10,12 +10,12 @@ from replay_memory import ReplayBuffer
 
 #pylint: disable=no-member
 
-class DQNAgent():
+class DoubleDQNAgent():
     def __init__(self, 
             env_name, input_shape, n_actions,
             mem_size=50000, replace=1000, batch_size=32,
             epsilon=0.9, eps_min=.01, eps_dec=5e-7,
-            gamma=0.99, lr=.99, algo='DQNAgent', chkpoint_dir="./checkpoint"):
+            gamma=0.99, lr=.99, algo='DoubleDQNAgent', chkpoint_dir="./checkpoint"):
         self.env_name = env_name           # name of game and gym env
         self.input_shape = input_shape       # image shape
         self.n_actions = n_actions         # number of possible actions
@@ -113,18 +113,21 @@ class DQNAgent():
         indices = np.arange(self.batch_size, dtype=int)
         # using current policy, get the action values
         q_pred = self.q_eval.forward(states)[indices, actions]
+        q_next = self.q_next.forward(states_)
+        q_eval = self.q_eval.forward(states_)
 
+        #pick action as best valued one
+        max_actions = T.argmax(q_eval, dim=1)
+        #terminal states have no next value
+        q_next[dones] = 0.0
 
-        # use target network to estimate the max value of the resulting state
-        q_next, _ = self.q_next.forward(states_).max(dim=1)
-
-        q_next[dones] = 0.0  # where terminal, value is zero
-
-        q_target = rewards + self.gamma*q_next
+        # update rule
+        q_target = rewards + self.gamma*q_next[indices, max_actions]
 
         loss = self.q_eval.loss(q_target, q_pred).to(self.q_eval.device)
         loss.backward()
-        self.q_eval.optimizer.step()
 
+        self.q_eval.optimizer.step()
+        
         self.learn_step_counter += 1
         self.decrement_epsilon()

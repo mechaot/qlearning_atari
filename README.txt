@@ -1,7 +1,5 @@
 # Install
 
-
-
 * miniconda
 * swigwin 4.0.2
 
@@ -13,6 +11,10 @@ pip install -r requirements.txt
 
 git clone https://github.com/mechaot/qlearning_atari
 ```
+
+# Note
+
+We pin old python and old libs because newer versions are cumbersome/do not work: they lack the roms due to increasing copyright concerns.
 
 
 # Ideas

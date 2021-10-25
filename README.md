@@ -1,10 +1,13 @@
 # Install
 
-* miniconda
-* swigwin 4.0.2
+
+* Install miniconda and add let installer add everything to path
+* Install swig
+  * Windows: Download and unzip swigwin 4.0.2, specify in bash snippet below
+  * Linux: `sudo apt-get install swig`
 
 ```bash
-export PATH=$PATH:/d/workspace/qlearning/swigwin-4.0.2
+export PATH=$PATH:./swigwin-4.0.2 # Win only
 
 conda env create -n qlearning -f environment.yml
 pip install -r requirements.txt

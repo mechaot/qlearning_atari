@@ -67,5 +67,5 @@ class DeepQNetwork(nn.Module):
 
     def load_checkpoint(self):
         filename = self.checkpoint_file + ".cpt"
-        torch.load_state_dict(torch.load(filename))
+        self.load_state_dict(torch.load(filename))
         print("Loaded checkpoint {}".format(os.path.abspath(filename)))

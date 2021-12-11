@@ -7,13 +7,14 @@ from os import makedirs
 
 #from dqn_agent import DQNAgent as Agent
 #from ddqn_agent import DoubleDQNAgent as Agent
-#from duelingqn_agent import DuelingDQNAgent as Agent
-from dueling_double_dqn_agent import DuelingDoubleDQNAgent as Agent
+from duelingqn_agent import DuelingDQNAgent as Agent
+#from dueling_double_dqn_agent import DuelingDoubleDQNAgent as Agent
 
 from utils import make_env, plot_learning_curve
 from tqdm import tqdm
 from time import perf_counter
 from imageio import imwrite
+import torch
 
 import gym
 from gym import wrappers
@@ -21,6 +22,8 @@ from gym import wrappers
 if __name__ == '__main__':
     #env_name = 'ALE/Tetris-v5'
     #env_name = 'Pong-v1'
+    print("Cuda:", torch.cuda.is_available(), torch.cuda.current_device())
+
     env_name = 'PongNoFrameskip-v4'
     env = make_env(env_name)
     best_score = -np.inf
@@ -36,7 +39,7 @@ if __name__ == '__main__':
         mem_size=80000,
         batch_size=64,
         replace=1000,
-        chkpoint_dir='./checkpoints3',
+        chkpoint_dir='./checkpoints_dqna',
         env_name=env_name
     )
 

@@ -2,15 +2,11 @@
 
 
 * Install miniconda and add let installer add everything to path
-* Install swig
-  * Windows: Download and unzip swigwin 4.0.2, specify in bash snippet below
-  * Linux: `sudo apt-get install swig`
+* Install swig (comes now with environment.yml)
+
 
 ```bash
-export PATH=$PATH:./swigwin-4.0.2 # Win only
-
 conda env create -n qlearning -f environment.yml
-pip install -r requirements.txt
 
 git clone https://github.com/mechaot/qlearning_atari
 ```

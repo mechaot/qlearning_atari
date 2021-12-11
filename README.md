@@ -6,9 +6,12 @@
 
 
 ```bash
+git clone https://github.com/mechaot/qlearning_atari
 conda env create -n qlearning -f environment.yml
 
-git clone https://github.com/mechaot/qlearning_atari
+# to run
+conda activate qlearning
+python dqn_main.py
 ```
 
 
